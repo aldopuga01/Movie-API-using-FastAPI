@@ -1,3 +1,5 @@
+Movie API using FastAPI
+
 This is a simple RESTful API created with FastAPI that allows users to perform CRUD (Create, Read, Update, Delete) operations on a movie database. The API is protected with JWT-based authentication and includes endpoints for user login and registration.
 
 The API uses an SQLite database to store movie information, including movie name, release year, and genre. The API allows users to retrieve all movies, as well as individual movies by ID. Users can also add, update, and delete movies from the database.
