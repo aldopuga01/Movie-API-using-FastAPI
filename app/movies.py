@@ -4,6 +4,7 @@ from typing import Optional, List
 from app.models import JWTBearer, Movie
 from config.database import Session
 from models.movie import Movie as MovieModel
+from fastapi.encoders import jsonable_encoder 
 
 movies_router = APIRouter()
 
@@ -18,16 +19,26 @@ movies = [
 # Retornar todas las peliculas
 @movies_router.get('/movies/all', tags=['Movies'], response_model=List[Movie], status_code=200, dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
-    return movies
+    # Session from database
+    session = Session()
+    # Query all movies from database
+    result = session.query(MovieModel).all()
+    return JSONResponse(content=jsonable_encoder(result), status_code=200)
 
 @movies_router.get('/movies/{id}', tags=['Movies'], response_model=Movie)
 def find_by_id(id: int = Path(default=1, ge=1, le=len(movies))) -> Movie:
-    # Realizar filtrado por id utilizando el parámetro path utilizando try y except
+    # Session from database 
+    session = Session()
+    # Query movie by id from database
+    result = session.query(MovieModel).filter(MovieModel.id == id).first()
     try:
-        movie = [movie for movie in movies if movie['id'] == id][0]
-        return movie
-    except IndexError: 
-        raise HTTPException(status_code=404, detail='Movie not found')
+        if result:
+            return JSONResponse(content=jsonable_encoder(result), status_code=200)
+        else:
+            return JSONResponse(content={'message': 'Movie not found'}, status_code=404)
+    except Exception as e:
+        return JSONResponse(content={'message': str(e)}, status_code=500)
+
 
 @movies_router.get('/movies', tags=['Movies'], response_model=List[Movie])
 def find_by_genre(genre: Optional[str] = Query(None, min_length=3, max_length=100)) -> List[Movie]: 
